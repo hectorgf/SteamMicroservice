@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SteamMicroservice.Model.Game;
+using SteamMicroservice.Model.User;
 using SteamMicroservice.Services.Interfaces;
 
 namespace SteamMicroservice.Controllers
@@ -24,6 +24,16 @@ namespace SteamMicroservice.Controllers
             await foreach (var player in players)
             {
                 yield return player;
+            }
+        }
+
+        [HttpGet("GetFriendList")]
+        public async IAsyncEnumerable<Friend> GetFriendList(string userID)
+        {
+            var friends = _usersService.GetFriendList(userID);
+            await foreach (var friend in friends)
+            {
+                yield return friend;
             }
         }
     }
