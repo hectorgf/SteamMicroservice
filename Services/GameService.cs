@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SteamMicroservice.Model.Game;
 using SteamMicroservice.Model.User;
 using SteamMicroservice.Services.Interfaces;
@@ -56,6 +57,28 @@ namespace SteamMicroservice.Services
                 {
                     // Si la solicitud no fue exitosa, muestra el código de estado
                     Console.WriteLine("La solicitud no fue exitosa. Código de estado: " + response.StatusCode);
+                }
+            }
+        }
+
+        public async Task<SteamGameData> GetGameDetails(string gameId)
+        {
+            using (var client = new HttpClient())
+            {
+                var url = $"http://store.steampowered.com/api/appdetails?appids={gameId}";
+                var response = await client.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var jObject = JObject.Parse(content);
+                    var gameDataContent = jObject[gameId]["data"].ToString();
+                    var gameData = JsonConvert.DeserializeObject<SteamGameData>(gameDataContent);
+                    return gameData;
+                }
+                else
+                {
+                    throw new Exception($"Error al obtener los detalles del juego: {response.StatusCode}");
                 }
             }
         }

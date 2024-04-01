@@ -26,5 +26,11 @@ namespace SteamMicroservice.Controllers
                 yield return game;
             }
         }
+
+        [HttpGet("GetGameDetails")]
+        public async Task<SteamGameData> GetGameDetails(string gameId)
+        {
+            return await _gameService.GetGameDetails(gameId);
+        }
     }
 }
