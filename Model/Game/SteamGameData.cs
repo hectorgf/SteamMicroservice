@@ -14,7 +14,7 @@
         public string header_image { get; set; }
         public string capsule_image { get; set; }
         public string capsule_imagev5 { get; set; }
-        public object website { get; set; }
+        public string website { get; set; }
         public Pc_Requirements pc_requirements { get; set; }
         public Mac_Requirements mac_requirements { get; set; }
         public Linux_Requirements linux_requirements { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace SteamMicroservice.Model.Game
 {
-    public class RootSteamGame
+    public class SteamGameRoot
     {
         public SteamGameId gameId { get; set; }
     }

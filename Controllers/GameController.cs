@@ -18,17 +18,25 @@ namespace SteamMicroservice.Controllers
         }
 
         [HttpGet("GetOwnedGames")]
-        public async IAsyncEnumerable<OwnedGame> GetOwnedGames(string userID)
+        public async IAsyncEnumerable<SteamGame> GetOwnedGames(string userID)
         {
-            var games = _gameService.GetOwnedGames(userID);
-            await foreach (var game in games)
+            await foreach (var game in _gameService.GetOwnedGames(userID, false))
+            {
+                yield return game;
+            }
+        }
+
+        [HttpGet("GetDetailedOwnedGames")]
+        public async IAsyncEnumerable<SteamGame> GetDetailedOwnedGames(string userID)
+        {
+            await foreach (var game in _gameService.GetOwnedGames(userID, true))
             {
                 yield return game;
             }
         }
 
         [HttpGet("GetGameDetails")]
-        public async Task<SteamGameData> GetGameDetails(string gameId)
+        public async Task<SteamGame> GetGameDetails(int gameId)
         {
             return await _gameService.GetGameDetails(gameId);
         }
