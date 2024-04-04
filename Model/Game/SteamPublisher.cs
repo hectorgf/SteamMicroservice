@@ -1,9 +1,13 @@
-﻿namespace SteamMicroservice.Model.Game
+﻿using System.Text.Json.Serialization;
+
+namespace SteamMicroservice.Model.Game
 {
     public class SteamPublisher
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public IEnumerable<SteamGame> Games { get; set; }
+
+        [JsonIgnore]
+        public virtual IEnumerable<SteamGame> Games { get; set; }
     }
 }

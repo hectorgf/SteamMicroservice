@@ -17,6 +17,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SteamDbContext>(options =>
            options.UseSqlServer(builder.Configuration.GetConnectionString("SteamMicroservice")));
 
+builder.Services.AddControllers().AddJsonOptions(options => {
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,12 +42,13 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<SteamDbContext>();
-        context.Database.EnsureCreated();
+        // Aplica las migraciones automáticamente
+        context.Database.Migrate();
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ha ocurrido un error al crear la base de datos.");
+        logger.LogError(ex, "Ha ocurrido un error al migrar la base de datos.");
     }
 }
 

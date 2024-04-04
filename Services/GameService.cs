@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SteamMicroservice.Model;
+using SteamMicroservice.Model.Configuration;
 using SteamMicroservice.Model.Game;
 using SteamMicroservice.Services.Interfaces;
 
@@ -9,17 +11,19 @@ namespace SteamMicroservice.Services
     public class GameService : IGamesService
     {
         private IConfiguration _config;
+        private readonly SteamDbContext _context;
         private string BASIC_URL;
         private string API_KEY;
 
-        public GameService(IConfiguration config)
+        public GameService(IConfiguration config, SteamDbContext context)
         {
             _config = config;
+            _context = context;
             BASIC_URL = _config["APIURLs:Players"];
             API_KEY = _config["APIKey"];
         }
 
-        public async IAsyncEnumerable<SteamGame> GetOwnedGames(string userId, bool withDetails)
+        public async IAsyncEnumerable<OwnedGame> GetOwnedGames(string userId, bool withDetails)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -50,7 +54,7 @@ namespace SteamMicroservice.Services
                     OwnedGameRoot result = JsonConvert.DeserializeObject<OwnedGameRoot>(json);
                     foreach (var game in result.response.games)
                     {
-                        yield return await GetDetailedGame(game);
+                        yield return game;
                     }
                 }
                 else
@@ -60,21 +64,40 @@ namespace SteamMicroservice.Services
                 }
             }
         }
-
-        public async Task<SteamGame> GetGameDetails(int gameId)
+        public async IAsyncEnumerable<SteamGame> GetGameDetails(IEnumerable<OwnedGame> games)
         {
+            var tasks = games.Select(game => GetGameDetailsAsync(game));
+
+            foreach (var task in tasks)
+            {
+                yield return await task;
+            }
+        }
+
+        private async Task<SteamGame> GetGameDetailsAsync(OwnedGame game)
+        {
+            SteamGame detailedGame = await GetGameFromBD(game.appid);
+
+            if (detailedGame != null)
+                return detailedGame;
+
             using (var client = new HttpClient())
             {
-                var url = $"http://store.steampowered.com/api/appdetails?appids={gameId}";
+                var url = $"http://store.steampowered.com/api/appdetails?appids={game.appid}";
                 var response = await client.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var jObject = JObject.Parse(content);
-                    var gameDataContent = jObject[gameId]["data"].ToString();
+                    var gameDataContent = jObject[game.appid.ToString()]["data"].ToString();
                     var gameData = JsonConvert.DeserializeObject<SteamGameData>(gameDataContent);
-                    return await ConvertGame(gameData);
+
+                    detailedGame = await ConvertGame(gameData);
+                    _context.Games.Add(detailedGame);
+                    await _context.SaveChangesAsync();
+
+                    return detailedGame;
                 }
                 else
                 {
@@ -83,46 +106,67 @@ namespace SteamMicroservice.Services
             }
         }
 
-        private async Task<SteamGame> GetDetailedGame(OwnedGame game)
+        private Task<SteamGame> GetGameFromBD(int gameId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return _context.Games.Where(x => x.SteamId == gameId).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private async Task<SteamGame> ConvertGame(SteamGameData game)
         {
-            return new SteamGame
+            try
             {
-                SteamId = game.steam_appid,
-                Type = Enum.Parse<SteamGameType>(game.type),
-                Name = game.name,
-                RequiredAge = game.required_age,
-                IsFree = game.is_free,
-                Description = game.detailed_description,
-                AboutGame = game.about_the_game,
-                ShortDescription = game.short_description,
-                Languages = game.supported_languages,
-                HeaderImage = game.header_image,
-                CapsuleImage = game.capsule_image,
-                CapsuleImageV5 = game.capsule_imagev5,
-                Website = game.website,
-                Requirements = GetGameRequirements(game),
-                Developers = GetGameDevelopers(game.developers),
-                Publishers = GetGamePublishers(game.publishers),
-                Windows = game.platforms.windows,
-                MacOS = game.platforms.mac,
-                Linux = game.platforms.linux,
-                Categories = GetGameCategories(game.categories),
-                Genres = GetGameGenres(game.genres),
-                Screenshots = GetGameScreenshots(game.screenshots),
-                Recomendations = game.recommendations.total,
-                ReleaseDate = new SteamReleaseDate
+                return new SteamGame
                 {
-                    ComingSoon = game.release_date.coming_soon,
-                    Date = new DateTime(Convert.ToInt32(game.release_date.date.Split(',')[1].Trim()),
-                                        ConvertMonth(game.release_date.date.Split(',')[0].Split(' ')[1]),
-                                        Convert.ToInt32(game.release_date.date.Split(',')[0].Split(' ')[0]))
-                }
-            };
+                    SteamId = game.steam_appid,
+                    Type = Enum.Parse<SteamGameType>(game.type),
+                    Name = game.name,
+                    RequiredAge = game.required_age,
+                    IsFree = game.is_free,
+                    Description = game.detailed_description,
+                    AboutGame = game.about_the_game,
+                    ShortDescription = game.short_description,
+                    Languages = game.supported_languages,
+                    HeaderImage = game.header_image,
+                    CapsuleImage = game.capsule_image,
+                    CapsuleImageV5 = game.capsule_imagev5,
+                    Website = game.website,
+                    Requirements = GetGameRequirements(game),
+                    Developers = GetGameDevelopers(game.developers),
+                    Publishers = GetGamePublishers(game.publishers),
+                    Price = new SteamPrice
+                    {
+                        Currency = game.price_overview.currency,
+                        Initial = game.price_overview.initial,
+                        Final = game.price_overview.final,
+                        Discount = game.price_overview.discount_percent
+                    },
+                    Windows = game.platforms.windows,
+                    MacOS = game.platforms.mac,
+                    Linux = game.platforms.linux,
+                    Categories = GetGameCategories(game.categories),
+                    Genres = GetGameGenres(game.genres),
+                    Screenshots = ConvertScreenshots(game.screenshots),
+                    Recomendations = game.recommendations.total,
+                    ReleaseDate = new SteamReleaseDate
+                    {
+                        ComingSoon = game.release_date.coming_soon,
+                        Date = new DateTime(Convert.ToInt32(game.release_date.date.Split(',')[1].Trim()),
+                                            ConvertMonth(game.release_date.date.Split(',')[0].Split(' ')[1]),
+                                            Convert.ToInt32(game.release_date.date.Split(',')[0].Split(' ')[0]))
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private List<SteamRequirement> GetGameRequirements(SteamGameData game)
@@ -158,27 +202,136 @@ namespace SteamMicroservice.Services
 
         private IEnumerable<SteamDeveloper> GetGameDevelopers(string[] developers)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SteamDeveloper> steamDevelopers = new List<SteamDeveloper>();
+
+                foreach (var developer in developers)
+                {
+                    SteamDeveloper dev = _context.Developers.Where(x => x.Name == developer).FirstOrDefault();
+
+                    if (dev != null)
+                        steamDevelopers.Add(dev);
+                    else
+                        steamDevelopers.Add(new SteamDeveloper
+                        {
+                            Name = developer
+                        });
+                }
+
+                return steamDevelopers;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private IEnumerable<SteamPublisher> GetGamePublishers(string[] publishers)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SteamPublisher> steamPublisher = new List<SteamPublisher>();
+
+                foreach (var publisher in publishers)
+                {
+                    SteamPublisher pub = _context.Publishers.Where(x => x.Name == publisher).FirstOrDefault();
+
+                    if (pub != null)
+                        steamPublisher.Add(pub);
+                    else
+                        steamPublisher.Add(new SteamPublisher
+                        {
+                            Name = publisher
+                        });
+                }
+
+                return steamPublisher;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        private IEnumerable<SteamScreenshot> GetGameScreenshots(Screenshot[] screenshots)
+        private IEnumerable<SteamScreenshot> ConvertScreenshots(Screenshot[] screenshots)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SteamScreenshot> steamCategory = new List<SteamScreenshot>();
+
+                foreach (var screenshot in screenshots)
+                {
+                    steamCategory.Add(new SteamScreenshot
+                    {
+                        SteamId = screenshot.id,
+                        Full = screenshot.path_full,
+                        Thumbnail = screenshot.path_thumbnail
+                    });
+                }
+
+                return steamCategory;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private IEnumerable<SteamGenre> GetGameGenres(Genre[] genres)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SteamGenre> steamCategory = new List<SteamGenre>();
+
+                foreach (var genre in genres)
+                {
+                    SteamGenre cat = _context.Genres.Where(x => x.Description == genre.description).FirstOrDefault();
+
+                    if (cat != null)
+                        steamCategory.Add(cat);
+                    else
+                        steamCategory.Add(new SteamGenre
+                        {
+                            SteamId = genre.id,
+                            Description = genre.description
+                        });
+                }
+
+                return steamCategory;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private IEnumerable<SteamCategory> GetGameCategories(Category[] categories)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<SteamCategory> steamCategory = new List<SteamCategory>();
+
+                foreach (var category in categories)
+                {
+                    SteamCategory cat = _context.Categories.Where(x => x.Description == category.description).FirstOrDefault();
+
+                    if (cat != null)
+                        steamCategory.Add(cat);
+                    else
+                        steamCategory.Add(new SteamCategory
+                        {
+                            SteamId = category.id,
+                            Description = category.description
+                        });
+                }
+
+                return steamCategory;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private int ConvertMonth(string month)

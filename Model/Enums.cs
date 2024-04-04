@@ -3,7 +3,7 @@
     public enum SteamGameType
     {
         Unknown,
-        Game
+        game
     }
 
     public enum RequirementType

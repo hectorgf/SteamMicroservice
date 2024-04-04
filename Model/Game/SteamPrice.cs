@@ -2,26 +2,26 @@
 {
     public class SteamPrice
     { 
-        public string Currency {  get; set; }
+        public string? Currency {  get; set; }
         public long? Initial {  get; set; }
         public long? Final { get; set; }
         public long? Discount { get; set;}
-        public string? FormatedInitial
+        public decimal? FormatedInitial
         {
             get 
             {
                 if (this.Initial != null)
-                    return (this.Initial / 100).ToString();
+                    return (this.Initial / 100);
                 else
                     return null;
             }
         }
-        public string? FormatedFinal
+        public decimal? FormatedFinal
         {
             get
             {
                 if (this.Initial != null)
-                    return (this.Final / 100).ToString();
+                    return (this.Final / 100);
                 else
                     return null;
             }

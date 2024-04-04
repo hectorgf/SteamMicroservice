@@ -5,8 +5,8 @@ namespace SteamMicroservice.Services.Interfaces
 {
     public interface IGamesService
     {
-        IAsyncEnumerable<SteamGame> GetOwnedGames(string userId, bool withDetails);
+        IAsyncEnumerable<OwnedGame> GetOwnedGames(string userId, bool withDetails);
 
-        Task<SteamGame> GetGameDetails(int gameId);
+        IAsyncEnumerable<SteamGame> GetGameDetails(IEnumerable<OwnedGame> games);
     }
 }

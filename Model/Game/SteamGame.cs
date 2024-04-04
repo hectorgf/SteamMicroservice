@@ -16,16 +16,16 @@
         public string CapsuleImage { get; set; }
         public string CapsuleImageV5 { get; set; }
         public string Website {  get; set; }
-        public IEnumerable<SteamRequirement> Requirements { get; set; }
-        public IEnumerable<SteamDeveloper> Developers { get; set; }
-        public IEnumerable<SteamPublisher> Publishers { get; set; }
+        public virtual IEnumerable<SteamRequirement> Requirements { get; set; }
+        public virtual IEnumerable<SteamDeveloper> Developers { get; set; }
+        public virtual IEnumerable<SteamPublisher> Publishers { get; set; }
         public SteamPrice Price { get; set; }
         public bool Windows {  get; set; }
         public bool MacOS { get; set; }
         public bool Linux { get; set; }
-        public IEnumerable<SteamCategory> Categories { get; set; }
-        public IEnumerable<SteamGenre> Genres { get; set; }
-        public IEnumerable<SteamScreenshot> Screenshots { get; set; }
+        public virtual IEnumerable<SteamCategory> Categories { get; set; }
+        public virtual IEnumerable<SteamGenre> Genres { get; set; }
+        public virtual IEnumerable<SteamScreenshot> Screenshots { get; set; }
         public long Recomendations { get; set; }
         public SteamReleaseDate ReleaseDate { get; set; }
     }
