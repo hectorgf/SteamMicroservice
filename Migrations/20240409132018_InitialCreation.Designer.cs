@@ -12,8 +12,8 @@ using SteamMicroservice.Model.Configuration;
 namespace SteamMicroservice.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    [Migration("20240404082130_FirstCreation")]
-    partial class FirstCreation
+    [Migration("20240409132018_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,21 @@ namespace SteamMicroservice.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("OwnedGamePlayer", b =>
+                {
+                    b.Property<Guid>("OwnedGamesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ownersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("OwnedGamesId", "ownersId");
+
+                    b.HasIndex("ownersId");
+
+                    b.ToTable("OwnedGamePlayer");
+                });
 
             modelBuilder.Entity("SteamCategorySteamGame", b =>
                 {
@@ -88,7 +103,45 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("SteamGameSteamPublisher");
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamCategory", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.OwnedGame", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("appid")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_2weeks")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_deck_forever")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_disconnected")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_forever")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_linux_forever")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_mac_forever")
+                        .HasColumnType("int");
+
+                    b.Property<int>("playtime_windows_forever")
+                        .HasColumnType("int");
+
+                    b.Property<int>("rtime_last_played")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OwnedGames", (string)null);
+                });
+
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamCategory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,7 +159,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamDeveloper", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamDeveloper", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -121,7 +174,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Developers", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamGame", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamGame", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +245,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Games", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamGenre", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamGenre", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -210,7 +263,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Genres", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamPublisher", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamPublisher", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -225,7 +278,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Publishers", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamRequirement", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamRequirement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -251,7 +304,7 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Requirements", (string)null);
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamScreenshot", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamScreenshot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -278,15 +331,109 @@ namespace SteamMicroservice.Migrations
                     b.ToTable("Screenshots", (string)null);
                 });
 
+            modelBuilder.Entity("SteamMicroservice.Model.Users.Player", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("avatar")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("avatarfull")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("avatarhash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("avatarmedium")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("commentpermission")
+                        .HasColumnType("int");
+
+                    b.Property<int>("communityvisibilitystate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("lastlogoff")
+                        .HasColumnType("int");
+
+                    b.Property<int>("loccityid")
+                        .HasColumnType("int");
+
+                    b.Property<string>("loccountrycode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("locstatecode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("personaname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("personastate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("personastateflags")
+                        .HasColumnType("int");
+
+                    b.Property<string>("primaryclanid")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("profilestate")
+                        .HasColumnType("int");
+
+                    b.Property<string>("profileurl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("realname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("steamid")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("timecreated")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Players", (string)null);
+                });
+
+            modelBuilder.Entity("OwnedGamePlayer", b =>
+                {
+                    b.HasOne("SteamMicroservice.Model.Games.OwnedGame", null)
+                        .WithMany()
+                        .HasForeignKey("OwnedGamesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SteamMicroservice.Model.Users.Player", null)
+                        .WithMany()
+                        .HasForeignKey("ownersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SteamCategorySteamGame", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamCategory", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamCategory", null)
                         .WithMany()
                         .HasForeignKey("CategoriesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", null)
                         .WithMany()
                         .HasForeignKey("GamesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,13 +442,13 @@ namespace SteamMicroservice.Migrations
 
             modelBuilder.Entity("SteamDeveloperSteamGame", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamDeveloper", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamDeveloper", null)
                         .WithMany()
                         .HasForeignKey("DevelopersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", null)
                         .WithMany()
                         .HasForeignKey("GamesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -310,13 +457,13 @@ namespace SteamMicroservice.Migrations
 
             modelBuilder.Entity("SteamGameSteamGenre", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", null)
                         .WithMany()
                         .HasForeignKey("GamesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGenre", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGenre", null)
                         .WithMany()
                         .HasForeignKey("GenresId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -325,22 +472,22 @@ namespace SteamMicroservice.Migrations
 
             modelBuilder.Entity("SteamGameSteamPublisher", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", null)
                         .WithMany()
                         .HasForeignKey("GamesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SteamMicroservice.Model.Game.SteamPublisher", null)
+                    b.HasOne("SteamMicroservice.Model.Games.SteamPublisher", null)
                         .WithMany()
                         .HasForeignKey("PublishersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamGame", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamGame", b =>
                 {
-                    b.OwnsOne("SteamMicroservice.Model.Game.SteamPrice", "Price", b1 =>
+                    b.OwnsOne("SteamMicroservice.Model.Games.SteamPrice", "Price", b1 =>
                         {
                             b1.Property<Guid>("SteamGameId")
                                 .HasColumnType("uniqueidentifier");
@@ -365,7 +512,7 @@ namespace SteamMicroservice.Migrations
                                 .HasForeignKey("SteamGameId");
                         });
 
-                    b.OwnsOne("SteamMicroservice.Model.Game.SteamReleaseDate", "ReleaseDate", b1 =>
+                    b.OwnsOne("SteamMicroservice.Model.Games.SteamReleaseDate", "ReleaseDate", b1 =>
                         {
                             b1.Property<Guid>("SteamGameId")
                                 .HasColumnType("uniqueidentifier");
@@ -391,9 +538,9 @@ namespace SteamMicroservice.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamRequirement", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamRequirement", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", "Game")
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", "Game")
                         .WithMany("Requirements")
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -402,9 +549,9 @@ namespace SteamMicroservice.Migrations
                     b.Navigation("Game");
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamScreenshot", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamScreenshot", b =>
                 {
-                    b.HasOne("SteamMicroservice.Model.Game.SteamGame", "Game")
+                    b.HasOne("SteamMicroservice.Model.Games.SteamGame", "Game")
                         .WithMany("Screenshots")
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -413,7 +560,7 @@ namespace SteamMicroservice.Migrations
                     b.Navigation("Game");
                 });
 
-            modelBuilder.Entity("SteamMicroservice.Model.Game.SteamGame", b =>
+            modelBuilder.Entity("SteamMicroservice.Model.Games.SteamGame", b =>
                 {
                     b.Navigation("Requirements");
 

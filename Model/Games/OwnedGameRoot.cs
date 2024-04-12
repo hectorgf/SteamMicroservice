@@ -1,4 +1,4 @@
-﻿namespace SteamMicroservice.Model.Game
+﻿namespace SteamMicroservice.Model.Games
 {
 
     public class OwnedGameRoot

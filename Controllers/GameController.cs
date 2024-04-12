@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SteamMicroservice.Model.Game;
+using SteamMicroservice.Model.Games;
 using SteamMicroservice.Services.Interfaces;
 
 namespace SteamMicroservice.Controllers
@@ -18,27 +18,30 @@ namespace SteamMicroservice.Controllers
         }
 
         [HttpGet("GetOwnedGames")]
-        public async IAsyncEnumerable<OwnedGame> GetOwnedGames(string userID)
+        public async IAsyncEnumerable<Game> GetOwnedGames(string userId)
         {
-            await foreach (var game in _gameService.GetOwnedGames(userID, false))
+            await foreach (var game in _gameService.GetOwnedGames(userId))
             {
                 yield return game;
             }
         }
 
-        //[HttpGet("GetDetailedOwnedGames")]
-        //public async IAsyncEnumerable<SteamGame> GetDetailedOwnedGames(string userID)
-        //{
-        //    await foreach (var game in _gameService.GetOwnedGames(userID, true))
-        //    {
-        //        yield return game;
-        //    }
-        //}
+        [HttpGet("GetCollection")]
+        public async IAsyncEnumerable<Game> GetCollection(string userId)
+        {
+            await foreach(var game in _gameService.GetCollection(userId))
+            {
+                yield return game;
+            }
+        }
 
-        //[HttpGet("GetGameDetails")]
-        //public async Task<SteamGame> GetGameDetails(int gameId)
-        //{
-        //    return await _gameService.GetGameDetails(gameId);
-        //}
+        [HttpPut("GetGameDetails")]
+        public async IAsyncEnumerable<Game> UpdateGameDetails()
+        {
+            await foreach (var game in _gameService.UpdateGameDetails())
+            {
+                yield return game;
+            }
+        }
     }
 }

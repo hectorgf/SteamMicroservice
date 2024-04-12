@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SteamMicroservice.Model.User;
+using SteamMicroservice.Model.Users;
 using SteamMicroservice.Services.Interfaces;
 
 namespace SteamMicroservice.Controllers

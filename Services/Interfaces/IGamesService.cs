@@ -1,12 +1,14 @@
-﻿using SteamMicroservice.Model.Game;
-using SteamMicroservice.Model.User;
+﻿using SteamMicroservice.Model.Games;
+using SteamMicroservice.Model.Users;
 
 namespace SteamMicroservice.Services.Interfaces
 {
     public interface IGamesService
     {
-        IAsyncEnumerable<OwnedGame> GetOwnedGames(string userId, bool withDetails);
+        IAsyncEnumerable<Game> GetOwnedGames(string userId);
 
-        IAsyncEnumerable<SteamGame> GetGameDetails(IEnumerable<OwnedGame> games);
+        IAsyncEnumerable<Game> UpdateGameDetails();
+
+        IAsyncEnumerable<Game> GetCollection(string userId);
     }
 }

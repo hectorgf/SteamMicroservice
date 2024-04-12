@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SteamMicroservice.Migrations
 {
     /// <inheritdoc />
-    public partial class FirstCreation : Migration
+    public partial class InitialCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,6 +81,56 @@ namespace SteamMicroservice.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Genres", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OwnedGames",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    appid = table.Column<int>(type: "int", nullable: false),
+                    playtime_forever = table.Column<int>(type: "int", nullable: false),
+                    playtime_windows_forever = table.Column<int>(type: "int", nullable: false),
+                    playtime_mac_forever = table.Column<int>(type: "int", nullable: false),
+                    playtime_linux_forever = table.Column<int>(type: "int", nullable: false),
+                    playtime_deck_forever = table.Column<int>(type: "int", nullable: false),
+                    rtime_last_played = table.Column<int>(type: "int", nullable: false),
+                    playtime_disconnected = table.Column<int>(type: "int", nullable: false),
+                    playtime_2weeks = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OwnedGames", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Players",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    steamid = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    communityvisibilitystate = table.Column<int>(type: "int", nullable: false),
+                    profilestate = table.Column<int>(type: "int", nullable: false),
+                    personaname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    commentpermission = table.Column<int>(type: "int", nullable: false),
+                    profileurl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    avatarmedium = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    avatarfull = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    avatarhash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    lastlogoff = table.Column<int>(type: "int", nullable: false),
+                    personastate = table.Column<int>(type: "int", nullable: false),
+                    realname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    primaryclanid = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    timecreated = table.Column<int>(type: "int", nullable: false),
+                    personastateflags = table.Column<int>(type: "int", nullable: false),
+                    loccountrycode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    locstatecode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    loccityid = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Players", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -210,6 +260,30 @@ namespace SteamMicroservice.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OwnedGamePlayer",
+                columns: table => new
+                {
+                    OwnedGamesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ownersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OwnedGamePlayer", x => new { x.OwnedGamesId, x.ownersId });
+                    table.ForeignKey(
+                        name: "FK_OwnedGamePlayer_OwnedGames_OwnedGamesId",
+                        column: x => x.OwnedGamesId,
+                        principalTable: "OwnedGames",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OwnedGamePlayer_Players_ownersId",
+                        column: x => x.ownersId,
+                        principalTable: "Players",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SteamGameSteamPublisher",
                 columns: table => new
                 {
@@ -232,6 +306,11 @@ namespace SteamMicroservice.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OwnedGamePlayer_ownersId",
+                table: "OwnedGamePlayer",
+                column: "ownersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requirements_GameId",
@@ -268,6 +347,9 @@ namespace SteamMicroservice.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "OwnedGamePlayer");
+
+            migrationBuilder.DropTable(
                 name: "Requirements");
 
             migrationBuilder.DropTable(
@@ -284,6 +366,12 @@ namespace SteamMicroservice.Migrations
 
             migrationBuilder.DropTable(
                 name: "SteamGameSteamPublisher");
+
+            migrationBuilder.DropTable(
+                name: "OwnedGames");
+
+            migrationBuilder.DropTable(
+                name: "Players");
 
             migrationBuilder.DropTable(
                 name: "Categories");

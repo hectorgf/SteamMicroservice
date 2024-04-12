@@ -1,7 +1,11 @@
-﻿namespace SteamMicroservice.Model.User
+﻿using SteamMicroservice.Model.Games;
+using System.Text.Json.Serialization;
+
+namespace SteamMicroservice.Model.Users
 {
     public class Player
     {
+        public Guid Id { get; set; }
         public string steamid { get; set; }
         public int communityvisibilitystate { get; set; }
         public int profilestate { get; set; }
@@ -21,6 +25,8 @@
         public string loccountrycode { get; set; }
         public string locstatecode { get; set; }
         public int loccityid { get; set; }
-    }
 
+        [JsonIgnore]
+        public virtual ICollection<Game> Games { get; set; }
+    }
 }

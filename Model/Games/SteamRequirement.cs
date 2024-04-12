@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SteamMicroservice.Model.Game
+namespace SteamMicroservice.Model.Games
 {
     public class SteamRequirement
     {
@@ -10,6 +10,6 @@ namespace SteamMicroservice.Model.Game
         public string? Recomended { get; set; }
 
         [JsonIgnore]
-        public virtual SteamGame Game { get; set; }
+        public virtual Game Game { get; set; }
     }
 }

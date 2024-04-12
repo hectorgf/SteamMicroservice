@@ -1,4 +1,4 @@
-﻿namespace SteamMicroservice.Model.User
+﻿namespace SteamMicroservice.Model.Users
 {
     public class Friend
     {

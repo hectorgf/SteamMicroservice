@@ -1,4 +1,7 @@
-﻿namespace SteamMicroservice.Model.Game
+﻿using Newtonsoft.Json;
+using SteamMicroservice.Utils;
+
+namespace SteamMicroservice.Model.Games
 {
     public class SteamGameData
     {
@@ -36,19 +39,43 @@
         public object ratings { get; set; }
     }
 
+    [JsonConverter(typeof(PcRequirementsConverter))]
     public class Pc_Requirements
     {
-        public string minimum { get; set; }
+        public string? minimum { get; set; }
+        public string? recommended { get; set; }
+
+        public Pc_Requirements()
+        {
+            minimum = string.Empty;
+            recommended = string.Empty;
+        }
     }
 
+    [JsonConverter(typeof(MacRequirementsConverter))]
     public class Mac_Requirements
     {
-        public string minimum { get; set; }
+        public string? minimum { get; set; }
+        public string? recommended { get; set; }
+
+        public Mac_Requirements()
+        {
+            minimum = string.Empty;
+            recommended = string.Empty;
+        }
     }
 
+    [JsonConverter(typeof(LinuxRequirementsConverter))]
     public class Linux_Requirements
     {
-        public string minimum { get; set; }
+        public string? minimum { get; set; }
+        public string? recommended { get; set; }
+
+        public Linux_Requirements()
+        {
+            minimum = string.Empty;
+            recommended = string.Empty;
+        }
     }
 
     public class Price_Overview

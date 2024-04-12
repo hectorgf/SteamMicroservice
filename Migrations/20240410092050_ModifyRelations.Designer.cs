@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SteamMicroservice.Model.Configuration;
 
@@ -11,16 +12,15 @@ using SteamMicroservice.Model.Configuration;
 namespace SteamMicroservice.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240410092050_ModifyRelations")]
+    partial class ModifyRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.3")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -130,9 +130,6 @@ namespace SteamMicroservice.Migrations
                     b.Property<string>("Languages")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("LastUpdateDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("Linux")
                         .HasColumnType("bit");
 
@@ -142,7 +139,7 @@ namespace SteamMicroservice.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("Recomendations")
+                    b.Property<long>("Recomendations")
                         .HasColumnType("bigint");
 
                     b.Property<int?>("RequiredAge")

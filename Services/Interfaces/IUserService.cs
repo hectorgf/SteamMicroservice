@@ -1,4 +1,4 @@
-﻿using SteamMicroservice.Model.User;
+﻿using SteamMicroservice.Model.Users;
 
 namespace SteamMicroservice.Services.Interfaces
 {
