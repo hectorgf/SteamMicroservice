@@ -3,7 +3,10 @@
     public enum SteamGameType
     {
         Unknown,
-        game
+        game,
+        advertising,
+        mod,
+        dlc
     }
 
     public enum RequirementType

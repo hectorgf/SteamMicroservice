@@ -39,15 +39,15 @@ namespace SteamMicroservice.Services
                 game.Linux = gameData.platforms.linux;
                 if (gameData.categories != null)
                     game.Categories = GetGameCategories(gameData.categories);
-                game.Genres = GetGameGenres(gameData.genres);
-                game.Screenshots = ConvertScreenshots(gameData.screenshots);
+                if (gameData.genres != null)
+                    game.Genres = GetGameGenres(gameData.genres);
+                if (gameData.screenshots != null)
+                    game.Screenshots = ConvertScreenshots(gameData.screenshots);
                 game.Recomendations = gameData.recommendations?.total;
                 game.ReleaseDate = new SteamReleaseDate
                 {
                     ComingSoon = gameData.release_date.coming_soon,
-                    Date = new DateTime(Convert.ToInt32(gameData.release_date.date.Split(',')[1].Trim()),
-                                        ConvertMonth(gameData.release_date.date.Split(',')[0].Split(' ')[1]),
-                                        Convert.ToInt32(gameData.release_date.date.Split(',')[0].Split(' ')[0]))
+                    Date = ConvertDate(gameData.release_date.date)
                 };
                 game.IsUpdated = true;
                 game.LastUpdateDate = DateTime.Now;
@@ -60,11 +60,32 @@ namespace SteamMicroservice.Services
             return game;
         }
 
+        private DateTime? ConvertDate(string date)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(date))
+                    return null;
+
+                if (date.Contains(','))
+                    return new DateTime(Convert.ToInt32(date.Split(',')[1].Trim()),
+                                        ConvertMonth(date.Split(',')[0].Split(' ')[1]),
+                                        Convert.ToInt32(date.Split(',')[0].Split(' ')[0]));
+                else
+                    return new DateTime(Convert.ToInt32(date.Split(' ')[1]),
+                                        ConvertMonth(date.Split(' ')[0]), 1);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         private List<SteamRequirement> GetGameRequirements(SteamGameData game)
         {
             var requirements = _context.Requirements.Where(x => x.Game.SteamId == game.steam_appid).ToList();
 
-            if (game.pc_requirements != null 
+            if (game.pc_requirements != null
                 && (!string.IsNullOrEmpty(game.pc_requirements.recommended) || !string.IsNullOrEmpty(game.pc_requirements.minimum))
                 && (requirements == null || !requirements.Any(x => x.Type == RequirementType.PC)))
             {
@@ -76,7 +97,7 @@ namespace SteamMicroservice.Services
                 });
             }
 
-            if (game.mac_requirements != null 
+            if (game.mac_requirements != null
                 && (!string.IsNullOrEmpty(game.mac_requirements.recommended) || !string.IsNullOrEmpty(game.mac_requirements.minimum))
                 && (requirements == null || !requirements.Any(x => x.Type == RequirementType.MacOS)))
             {
@@ -244,7 +265,7 @@ namespace SteamMicroservice.Services
                 case "sep": return 9;
                 case "oct": return 10;
                 case "nov": return 11;
-                case "dic": return 12;
+                case "dec": return 12;
                 default: return -1;
             }
         }

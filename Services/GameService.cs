@@ -87,12 +87,15 @@ namespace SteamMicroservice.Services
                         {
                             var content = await response.Content.ReadAsStringAsync();
                             var jObject = JObject.Parse(content);
-                            var gameDataContent = jObject[game.SteamId.ToString()]["data"].ToString();
-                            var gameData = JsonConvert.DeserializeObject<SteamGameData>(gameDataContent);
+                            if ((bool)jObject[game.SteamId.ToString()]["success"])
+                            {
+                                var gameDataContent = jObject[game.SteamId.ToString()]["data"].ToString();
+                                var gameData = JsonConvert.DeserializeObject<SteamGameData>(gameDataContent);                                
 
-                            UpdateGame(game, gameData);
-                            _context.Games.Update(game);
-                            await _context.SaveChangesAsync();
+                                UpdateGame(game, gameData);
+                                _context.Games.Update(game);
+                                await _context.SaveChangesAsync();
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -116,12 +119,17 @@ namespace SteamMicroservice.Services
             if (player == null)
                 throw new Exception("No existe el jugador especificado.");
 
+            APILimiter apiLimiter = new APILimiter(2);
+
             foreach (var game in player.Games)
             {
                 if (game.IsUpdated)
                     yield return game;
                 else
+                {
+                    await apiLimiter.WaitBeforeRequest();
                     yield return UpdateGame(game).Result;
+                }
             }
         }
 
@@ -162,4 +170,39 @@ namespace SteamMicroservice.Services
             }
         }
     }
+
+    public class APILimiter
+    {
+        private DateTime lastRequestTime;
+        private int requestsCount;
+        private readonly int maxRequestsPerSecond;
+        private readonly object lockObject = new object();
+
+        public APILimiter(int maxRequestsPerSecond)
+        {
+            this.maxRequestsPerSecond = maxRequestsPerSecond;
+            this.lastRequestTime = DateTime.MinValue;
+            this.requestsCount = 0;
+        }
+
+        public async Task WaitBeforeRequest()
+        {
+            lock (lockObject)
+            {
+                var now = DateTime.Now;
+                var elapsed = now - lastRequestTime;
+                var interval = TimeSpan.FromSeconds(1.0 / maxRequestsPerSecond);
+
+                if (elapsed < interval)
+                {
+                    var delay = interval - elapsed;
+                    Thread.Sleep(delay);
+                }
+
+                lastRequestTime = DateTime.Now;
+                requestsCount++;
+            }
+        }
+    }
+
 }
